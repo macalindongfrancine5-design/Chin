@@ -1,25 +1,21 @@
-import logo from './logo.svg';
-import './App.css';
-
+//import logo from "./logo.svg";
+import "./App.css";
+import MyButton from "./components/button";
+import Card from "./components/Card";
+import Counter from "./components/Counter";
+import Form from "./components/Form";
+import List from "./components/List";
+ 
 function App() {
   return (
     <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
+      <MyButton />
+      <Card name="Chin" description="kind" />
+      <Form />
+      <Counter />
+      <List />
     </div>
   );
 }
-
+ 
 export default App;
