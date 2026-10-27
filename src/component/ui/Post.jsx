@@ -1,47 +1,54 @@
 import React, { useState, useEffect } from "react";
 import { getPost, storePost } from "../../api/post";
 import "./styles/post.css";
-import PostCard from "./PostCard";
- 
+import PostCard from "../PostCard";
+
 export default function Post() {
-  const { post, setPosts } = useState([]);
-  const { message, setMessage } = useState("");
-  const { error, setError } = useState("");
-  const { processing, setProcessing } = useState(false);
- 
+  const [posts, setPosts] = useState([]);
+  const [message, setMessage] = useState("");
+  const [error, setError] = useState("");
+  const [loadError, setLoadError] = useState("");
+  const [processing, setProcessing] = useState(false);
+
   useEffect(() => {
     const fetchPosts = async () => {
       try {
         const response = await getPost();
-        setPosts(response.data.data || response.data);
-      } catch (err) {
-        console.error("Failed to load posts", err);
+        const loadedPosts = response.data.data ?? response.data;
+
+        if (!Array.isArray(loadedPosts)) {
+          throw new Error("The posts response was not a list.");
+        }
+
+        setPosts(loadedPosts);
+      } catch {
+        setLoadError("Unable to load posts. Please try again later.");
       }
     };
- 
+
     fetchPosts();
   }, []);
- 
+
   useEffect(() => {
     if (message.trim() && error === "Post cannot be empty") {
       setError("");
     }
   }, [message, error]);
- 
+
   const submit = async (e) => {
     e.preventDefault();
- 
+
     if (!message.trim()) {
       setError("Post cannot be empty");
       return;
     }
- 
+
     setProcessing(true);
     setError("");
- 
+
     try {
       const response = await storePost({ message });
-      const newPost = response.data.data || response.data;
+      const newPost = response.data.data ?? response.data;
       setPosts((prevPosts) => [newPost, ...prevPosts]);
       setMessage("");
     } catch (err) {
@@ -53,20 +60,24 @@ export default function Post() {
       setProcessing(false);
     }
   };
- 
+
   return (
     <div className="post-container">
-      <div className="post-card">
+      <section className="post-composer" aria-labelledby="create-post-title">
+        <h1 className="post-title" id="create-post-title">
+          Create Post
+        </h1>
         <form onSubmit={submit} className="post-form">
           <textarea
             value={message}
-            placeholder="What is happening?!"
+            placeholder="What's on your mind?"
             className="post-textarea"
+            aria-label="Post message"
             onChange={(e) => setMessage(e.target.value)}
             disabled={processing}
-          ></textarea>
-          {error && <div className="post-error">{error}</div>}
- 
+          />
+          {error && <div className="post-error" role="alert">{error}</div>}
+
           <div className="post-footer">
             <button
               type="submit"
@@ -77,18 +88,13 @@ export default function Post() {
             </button>
           </div>
         </form>
-      </div>
-      <div className="post-feed-list">
-        {posts.length > 0 ? (
-          posts.map((post) => (
-            <PostCard key={post.id || Math.random()} post={post} />
-          ))
-        ) : (
-          <div className="post-empty-state">No posts shared yet.</div>
-        )}
-      </div>
- 
+      </section>
+      {loadError && <p className="post-load-error" role="alert">{loadError}</p>}
+      <section className="post-feed-list" aria-label="Posts">
+        {posts.map((post, index) => (
+          <PostCard key={post.id ?? index} post={post} />
+        ))}
+      </section>
     </div>
   );
 }
- 
